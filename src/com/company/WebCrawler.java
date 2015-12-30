@@ -7,13 +7,16 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ngot on 28/12/2015.
  */
 public class WebCrawler {
-    public static final String LINK_PREFIX = "a href=\"";
+    //public static final String LINK_PREFIX = "a href=\"";
     public static final int WEBPORT = 80;
+    private static final String REGEX = "href=\"(.*?)\"";
     private LinkedList<UrlDepthPair> pendingURLs;
     private List<UrlDepthPair> visited;
     private int maxDepth;
@@ -43,7 +46,7 @@ public class WebCrawler {
         PrintWriter writer = new PrintWriter(os, true);
 
         // Send HTTP request
-        String docPath = webpage.getDepth() > 0 ? "/stories" : "/";
+        String docPath = webpage.getDepth() == 0 ? "/stories" : webpage.getDocPath();
 
         writer.println("GET " + docPath + " HTTP/1.1");
         writer.println("Host: " + webpage.getWebHost());
@@ -58,11 +61,21 @@ public class WebCrawler {
         while (true) {
             String line = br.readLine();
             if (line == null) {
-                break; // done reading document
+                break;
             }
-            int idx = 0;
 
+            Pattern p = Pattern.compile(REGEX);
+            Matcher m = p.matcher(line);
+            while (m.find()) {
+                String url = m.group(1);
+                if (!visited.contains(url) && webpage.isUrlValid()) {
+                    pendingURLs.add(new UrlDepthPair(url, webpage.getDepth() + 1));
+                }
+            }
+
+            /*
             // Handles more than one url in a line
+            int idx = 0;
             while (true) {
                 idx = line.indexOf(LINK_PREFIX, idx);
                 if (idx == -1) {
@@ -79,12 +92,15 @@ public class WebCrawler {
                 }
 
                 if (url.startsWith(UrlDepthPair.URL_PREFIX)) {
-                    pendingURLs.add(new UrlDepthPair(url, webpage.getDepth() + 1));
+                    if (!visited.contains(url)) {
+                        pendingURLs.add(new UrlDepthPair(url, webpage.getDepth() + 1));
+                    }
 
                 } //else {
                    // throw new JaxmURI.MalformedURIException("Bad url");
                 //}
             }
+            */
         }
 
         visited.add(webpage);
@@ -98,7 +114,7 @@ public class WebCrawler {
 
             if (nextURLPair.getDepth() < maxDepth) {
                 try {
-                    System.out.println("Processing url");
+                    //System.out.println("Processing url");
                     processWebPage(nextURLPair);
                 }
                 catch (IOException e){

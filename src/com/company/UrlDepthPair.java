@@ -2,14 +2,16 @@ package com.company;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ngot on 27/12/2015.
  */
 public class UrlDepthPair {
+    public static final String URL_PREFIX = "http://";
     private String url;
     private int depth;
-    public static final String URL_PREFIX = "http://";
 
     public UrlDepthPair(String url, int depth) {
         this.url = url;
@@ -42,6 +44,16 @@ public class UrlDepthPair {
             System.out.println("wrapped url");
         }
         return null;
+    }
+
+    public String getDocPath() {
+        Pattern p = Pattern.compile("http://.*?/(.*)");
+        Matcher m = p.matcher(url);
+        if (m.find()) {
+            return m.group(1);
+        } else {
+            return "/";
+        }
     }
 
     public boolean isUrlValid() {
