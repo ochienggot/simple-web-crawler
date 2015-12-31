@@ -50,7 +50,7 @@ public class UrlDepthPair {
         Pattern p = Pattern.compile("http://.*?/(.*)");
         Matcher m = p.matcher(url);
         if (m.find()) {
-            return m.group(1);
+            return "/" + m.group(1);
         } else {
             return "/";
         }

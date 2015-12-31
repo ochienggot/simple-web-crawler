@@ -4,7 +4,6 @@ import com.sun.xml.internal.messaging.saaj.util.JaxmURI;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -18,13 +17,13 @@ public class WebCrawler {
     public static final int WEBPORT = 80;
     private static final String REGEX = "href=\"(.*?)\"";
     private LinkedList<UrlDepthPair> pendingURLs;
-    private List<UrlDepthPair> visited;
+    private LinkedList<UrlDepthPair> visited;
     private int maxDepth;
 
     public WebCrawler(int maxDepth) {
         this.maxDepth = maxDepth;
         pendingURLs = new LinkedList<>();
-        visited = new ArrayList<>();
+        visited = new LinkedList<>();
     }
 
     public List<UrlDepthPair> getSites() {
