@@ -2,8 +2,7 @@ package com.company;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,19 +11,33 @@ import java.util.regex.Pattern;
  */
 public class CrawlerTask implements Runnable {
     private static URLPool urlPool;
-    public static final int WEBPORT = 80;
+    private static final int WEBPORT = 80;
     private static final String REGEX = "href=\"(.*?)\"";
+    private volatile boolean running = true;
 
     public CrawlerTask(URLPool urlPool) {
         this.urlPool = urlPool;
     }
+
+    public boolean isUrlValid(String url) {
+        return url.startsWith(UrlDepthPair.URL_PREFIX);
+    }
+
+    public void terminate() {
+        running = false;
+    }
+
     public void run() {
-        while (urlPool.pending().size() > 0) {
-            UrlDepthPair currentPair = urlPool.get(); // wait done w/i URLpool object
+        // Thread runs in endless loop - passively (not busy-waiting) waiting for
+        // pending urls
+        while (running) {
             try {
+                UrlDepthPair currentPair = urlPool.get(); // wait done w/i URLpool object
                 processWebPage(currentPair);
             } catch (IOException e) {
                 System.out.println(e);
+            } catch (InterruptedException ie) {
+                running = false;
             }
         }
     }
@@ -39,7 +52,7 @@ public class CrawlerTask implements Runnable {
         PrintWriter writer = new PrintWriter(os, true);
 
         // Send HTTP request
-        String docPath = webpage.getDepth() == 0 ? "/stories" : webpage.getDocPath();
+        String docPath = webpage.getDepth() == 0 ? "/" : webpage.getDocPath();
 
         writer.println("GET " + docPath + " HTTP/1.1");
         writer.println("Host: " + webpage.getWebHost());
@@ -61,15 +74,17 @@ public class CrawlerTask implements Runnable {
             Matcher m = p.matcher(line);
             while (m.find()) {
                 String url = m.group(1);
-                if (!urlPool.visited().contains(url) && webpage.isUrlValid()) {
-                    int depth = webpage.getDepth();
-                    if (depth < urlPool.getMaxDepth()) {
-                        urlPool.put(new UrlDepthPair(url, webpage.getDepth() + 1));
+                if (isUrlValid(url)) {
+                    UrlDepthPair current = new UrlDepthPair(new URL(url), webpage.getDepth() + 1);
+
+                    if (!urlPool.seen(current)) {
+                        int depth = webpage.getDepth();
+                        if (depth < urlPool.getMaxDepth()) {
+                            urlPool.put(current);
+                        }
                     }
                 }
-                urlPool.putVisited(webpage);
             }
-
         }
         sock.close();
     }

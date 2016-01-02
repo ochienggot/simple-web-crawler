@@ -3,7 +3,9 @@ package com.company;
 import com.sun.xml.internal.messaging.saaj.util.JaxmURI;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -67,8 +69,12 @@ public class WebCrawler {
             Matcher m = p.matcher(line);
             while (m.find()) {
                 String url = m.group(1);
-                if (!visited.contains(url) && webpage.isUrlValid()) {
-                    pendingURLs.add(new UrlDepthPair(url, webpage.getDepth() + 1));
+                try {
+                    if (!visited.contains(url)) {
+                        pendingURLs.add(new UrlDepthPair(new URL(url), webpage.getDepth() + 1));
+                    }
+                } catch (MalformedURLException mue) {
+                    System.out.println(mue);
                 }
             }
 

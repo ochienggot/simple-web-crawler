@@ -8,46 +8,48 @@ import java.util.LinkedList;
 // URL pool object should be thread safe
 public class URLPool {
     private LinkedList<UrlDepthPair> pending;
-    private LinkedList<UrlDepthPair> visited;
+    private LinkedList<UrlDepthPair> seenUrls;
     private int maxDepth;
     private int waiting;
 
-    public URLPool() {
+    public URLPool(int maxDepth) {
         pending = new LinkedList<>();
-        visited = new LinkedList<>();
+        seenUrls = new LinkedList<>();
+        this.maxDepth = maxDepth;
+        waiting = 0;
     }
 
     /**
      * fetches a URL-depth pair from the pool and remove it from the list simultaneously
      */
-    public synchronized  UrlDepthPair get() {
-        try {
-            while (pending.size() == 0) {
-                waiting++;
-                wait();
-                waiting--;
-            }
-        } catch (InterruptedException e) {
-            System.out.println(e);
+    public synchronized  UrlDepthPair get() throws InterruptedException {
+        while (pending.size() == 0) {
+            waiting++;
+            wait(); // call wait on this
+            waiting--;
         }
         return pending.removeFirst();
     }
 
     public synchronized void put(UrlDepthPair url) {
-        pending.addLast(url);
-        //pending.notify();
+        if (url.getDepth() < maxDepth) {
+            pending.addLast(url);
+        }
+        // don't enqueue for later crawling
+        seenUrls.addLast(url);
+        notify(); // call notify on this
     }
 
-    public synchronized void putVisited(UrlDepthPair url) {
-        visited.addLast(url);
+    public synchronized int pending() {
+        return pending.size();
     }
 
-    public synchronized LinkedList<UrlDepthPair> pending() {
-        return pending;
+    public synchronized boolean seen(UrlDepthPair url) {
+        return seenUrls.contains(url);
     }
 
-    public synchronized LinkedList<UrlDepthPair> visited() {
-        return visited;
+    public synchronized LinkedList<UrlDepthPair> seen() {
+        return seenUrls;
     }
 
     public synchronized int getMaxDepth() {
