@@ -12,16 +12,18 @@ public class Main {
     public static void main(String[] args) {
         //System.out.println("In thread: " + Thread.currentThread().getName());
 
-        if (args.length != 3) {
+        if (args.length < 3) {
             System.out.println("Usage: java Crawler <URL> <depth> <threads>");
             System.exit(1);
         }
 
         int maxDepth = 0;
         int numberOfThreads = 0;
+        int maxPatience = 0;
         try {
             maxDepth = Integer.parseInt(args[1]);
             numberOfThreads = Integer.parseInt(args[2]);
+            maxPatience = Integer.parseInt(args[3]);
         }
         catch (NumberFormatException nfe) {
             System.out.println("The second and third arguments must be an integers.");
@@ -37,7 +39,7 @@ public class Main {
 
         // Create and start requested number of threads
         for (int i = 0; i < numberOfThreads; i++) {
-            CrawlerTask c = new CrawlerTask(urlPool);
+            CrawlerTask c = new CrawlerTask(urlPool, maxPatience);
             Thread t = new Thread(c);
             threadList.add(t);
             t.start();

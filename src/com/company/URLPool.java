@@ -1,6 +1,9 @@
 package com.company;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * Created by ngot on 31/12/2015.
@@ -8,13 +11,13 @@ import java.util.LinkedList;
 // URL pool object should be thread safe
 public class URLPool {
     private LinkedList<UrlDepthPair> pending;
-    private LinkedList<UrlDepthPair> seenUrls;
+    private Set<UrlDepthPair> seenUrls;
     private int maxDepth;
     private int waiting;
 
     public URLPool(int maxDepth) {
         pending = new LinkedList<>();
-        seenUrls = new LinkedList<>();
+        seenUrls = new LinkedHashSet<>();
         this.maxDepth = maxDepth;
         waiting = 0;
     }
@@ -36,7 +39,7 @@ public class URLPool {
             pending.addLast(url);
         }
         // don't enqueue for later crawling
-        seenUrls.addLast(url);
+        seenUrls.add(url);
         notify(); // call notify on this
     }
 
@@ -48,7 +51,7 @@ public class URLPool {
         return seenUrls.contains(url);
     }
 
-    public synchronized LinkedList<UrlDepthPair> seen() {
+    public synchronized Set<UrlDepthPair> seen() {
         return seenUrls;
     }
 

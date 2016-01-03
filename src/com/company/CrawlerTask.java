@@ -14,17 +14,15 @@ public class CrawlerTask implements Runnable {
     private static final int WEBPORT = 80;
     private static final String REGEX = "href=\"(.*?)\"";
     private volatile boolean running = true;
+    private int maxPatience;
 
-    public CrawlerTask(URLPool urlPool) {
+    public CrawlerTask(URLPool urlPool, int maxPatience) {
         this.urlPool = urlPool;
+        this.maxPatience = maxPatience;
     }
 
     public boolean isUrlValid(String url) {
         return url.startsWith(UrlDepthPair.URL_PREFIX);
-    }
-
-    public void terminate() {
-        running = false;
     }
 
     public void run() {
@@ -45,7 +43,7 @@ public class CrawlerTask implements Runnable {
     private void processWebPage(UrlDepthPair webpage) throws IOException {
 
         Socket sock = new Socket(webpage.getWebHost(), WEBPORT);
-        sock.setSoTimeout(3000);
+        sock.setSoTimeout(maxPatience);
 
         // Allows sending of data over the socket to the 'other side'
         OutputStream os = sock.getOutputStream();
