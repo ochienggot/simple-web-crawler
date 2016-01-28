@@ -26,7 +26,7 @@ public class Main {
             maxPatience = Integer.parseInt(args[3]);
         }
         catch (NumberFormatException nfe) {
-            System.out.println("The second and third arguments must be an integers.");
+            System.out.println("The second and third arguments must be integers.");
             System.exit(1);
         }
 
