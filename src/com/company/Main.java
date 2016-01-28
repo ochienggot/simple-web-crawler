@@ -10,7 +10,6 @@ public class Main {
     private static List<Thread> threadList = new ArrayList<>();
 
     public static void main(String[] args) {
-        //System.out.println("In thread: " + Thread.currentThread().getName());
 
         if (args.length < 3) {
             System.out.println("Usage: java Crawler <URL> <depth> <threads>");
@@ -20,6 +19,7 @@ public class Main {
         int maxDepth = 0;
         int numberOfThreads = 0;
         int maxPatience = 0;
+
         try {
             maxDepth = Integer.parseInt(args[1]);
             numberOfThreads = Integer.parseInt(args[2]);
@@ -47,7 +47,6 @@ public class Main {
 
         while (urlPool.getWaitingThreads() != numberOfThreads) {
             try {
-                //System.out.println("Waiting threads: " + urlPool.getWaitingThreads());
                 Thread.sleep(1000);
             } catch (InterruptedException ie) {
                 System.out.println("caught Interrupted Exception, ignoring...");

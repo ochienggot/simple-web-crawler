@@ -119,7 +119,6 @@ public class WebCrawler {
 
             if (nextURLPair.getDepth() < maxDepth) {
                 try {
-                    //System.out.println("Processing url");
                     processWebPage(nextURLPair);
                 }
                 catch (IOException e){
